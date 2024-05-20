@@ -10,15 +10,17 @@ mean_glucose, overweight_patients, high_risk_patients = data_processing.calculat
 
 app = dash.Dash(__name__)
 
-# Создайте графики
-graphs = [
+# Создаем список графиков
+charts = [
     visualizations.create_glucose_trend(df),
     visualizations.create_bmi_distribution(df),
     visualizations.create_cholesterol_histogram(df),
     visualizations.create_blood_pressure_vs_bmi(df)
 ]
 
-app.layout = dbc.Container([
+
+
+app.layout = html.Div([
     html.H1('Информационная панель мониторинга здоровья'),
     html.Div([
         html.H2('Метрики'),
@@ -40,39 +42,27 @@ app.layout = dbc.Container([
     html.Div([
         html.H2('Визуализация'),
         html.Div([
-            html.Div(id='graph-container'),
-        ], className='visualizations-container'),
-        html.Div([
-            dbc.Button('Назад', id='back-button', disabled=True),
-            dbc.Button('Вперед', id='forward-button', disabled=False)
-        ], className='button-container')
+            html.Div(id='chart-container', className='visualization'),
+            dbc.Button("Назад", id="back-button", className="mr-2"),
+            dbc.Button("Вперед", id="forward-button", className="mr-2"),
+            html.Div(id='button-output-container'),
+        ], className='visualizations-container')
     ], className='visualizations-section')
-], fluid=True)
+])
 
 @app.callback(
-    [Output('graph-container', 'children'),
-     Output('back-button', 'disabled'),
-     Output('forward-button', 'disabled')],
-    [Input('back-button', 'n_clicks'),
-     Input('forward-button', 'n_clicks')],
-    [State('graph-container', 'children')]
-    
+    Output('chart-container', 'children'),
+    [Input('back-button', 'n_clicks'), Input('forward-button', 'n_clicks')],
+    [State('chart-container', 'children')])
+def update_output(back_clicks, forward_clicks, current_chart):
+    chart_index = charts.index(current_chart) if current_chart in charts else 0
 
-)
+    if back_clicks is not None and back_clicks > 0:
+        chart_index = (chart_index - 1) % len(charts)
+    elif forward_clicks is not None and forward_clicks > 0:
+        chart_index = (chart_index + 1) % len(charts)
 
-def update_graph(back_clicks, forward_clicks, current_graph):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        return graphs[0], True, False
-    else:
-        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-        current_index = graphs.index(current_graph)
-        if button_id == 'back-button':
-            new_index = current_index - 1
-        elif button_id == 'forward-button':
-            new_index = current_index + 1
-        new_graph = graphs[new_index]
-        return new_graph, new_index == 0, new_index == len(graphs) - 1
+    return charts[chart_index]
 
 if __name__ == '__main__':
-    app.run_server
+    app.run_server(debug=True)
