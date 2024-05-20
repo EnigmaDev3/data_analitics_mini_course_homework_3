@@ -39,12 +39,15 @@ app.layout = html.Div([
             ], className='metric')
         ], className='metrics-container')
     ], className='metrics-section'),
+    
     html.Div([
         html.H2('Визуализация'),
         html.Div([
             html.Div(id='chart-container', className='visualization'),
-            dbc.Button("Назад", id="back-button", className="mr-2"),
-            dbc.Button("Вперед", id="forward-button", className="mr-2"),
+            html.Div([
+                dbc.Button("Назад", id="back-button", className="mr-2", style={'font-size': '20px'}),
+                dbc.Button("Вперед", id="forward-button", className="mr-2", style={'font-size': '20px'}),
+            ], style={'text-align': 'center'}),
             html.Div(id='button-output-container'),
         ], className='visualizations-container')
     ], className='visualizations-section')
